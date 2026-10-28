@@ -1,0 +1,488 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>销售排名 · 增强共享版</title>
+<style>
+  :root{ --primary:#e63946; --primary-dark:#c1121f; --bg:#f4f5f7; --card:#fff; --text:#1d2433; --sub:#6b7280; --border:#e5e7eb; --gold:#f59e0b; --silver:#9ca3af; --bronze:#b45309; --green:#2a9d8f; --blue:#2563eb; --violet:#7c3aed; }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);max-width:700px;margin:0 auto;padding-bottom:110px;}
+  header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;padding:16px 16px 12px;position:sticky;top:0;z-index:20;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+  header h1{font-size:19px;font-weight:700;}
+  header p{font-size:11px;opacity:.9;margin-top:3px;}
+  #cloud-status{position:absolute;top:16px;right:14px;font-size:10px;background:rgba(255,255,255,.22);padding:3px 8px;border-radius:999px;}
+  .tabs{display:flex;background:var(--card);position:sticky;top:66px;z-index:15;border-bottom:1px solid var(--border);overflow-x:auto;white-space:nowrap;}
+  .tabs button{flex:1;min-width:72px;padding:12px 4px;border:none;background:none;font-size:14px;font-weight:600;color:var(--sub);cursor:pointer;border-bottom:3px solid transparent;}
+  .tabs button.active{color:var(--primary);border-bottom-color:var(--primary);}
+  .panel{display:none;padding:14px 14px 20px;} .panel.active{display:block;}
+  .card{background:var(--card);border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+  .card h3{font-size:15px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;}
+  .card h3 .sub{font-size:12px;color:var(--sub);font-weight:400;}
+  .btn{display:inline-block;padding:9px 16px;border:none;border-radius:8px;background:var(--primary);color:#fff;font-size:14px;font-weight:600;cursor:pointer;}
+  .btn.ghost{background:var(--bg);color:var(--text);border:1px solid var(--border);}
+  .btn.green{background:var(--green);} .btn.blue{background:var(--blue);} .btn.violet{background:var(--violet);}
+  .btn.small{padding:5px 10px;font-size:12px;}
+  .input,select{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:8px;font-size:15px;background:#fff;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;} .row>*{flex:1;min-width:110px;}
+  .field label{display:block;font-size:12px;color:var(--sub);margin-bottom:4px;}
+  .field{margin-bottom:4px;}
+  table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+  th,td{padding:10px 6px;text-align:center;font-size:13px;border-bottom:1px solid var(--border);}
+  th{background:var(--bg);color:var(--sub);font-weight:600;}
+  tr:last-child td{border-bottom:none;}
+  tr.top1{background:#fff7e6;} tr.top2{background:#f6f7f9;} tr.top3{background:#fdf0ee;}
+  .badge{display:inline-block;width:22px;height:22px;line-height:22px;border-radius:50%;font-size:12px;font-weight:700;color:#fff;text-align:center;}
+  .badge.gold{background:var(--gold);} .badge.silver{background:var(--silver);} .badge.bronze{background:var(--bronze);} .badge.plain{background:#d1d5db;color:#fff;}
+  .total{font-weight:700;color:var(--primary);}
+  .filter-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;} .filter-row select{flex:1;min-width:100px;}
+  .seg{display:flex;background:var(--bg);border-radius:8px;padding:3px;margin-bottom:10px;}
+  .seg button{flex:1;border:none;background:none;padding:8px 0;font-size:13px;font-weight:600;color:var(--sub);border-radius:6px;cursor:pointer;}
+  .seg button.active{background:#fff;color:var(--primary);box-shadow:0 1px 3px rgba(0,0,0,.1);}
+  .delete{background:#fee2e2;color:#b91c1c;border:none;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;}
+  .empty{text-align:center;color:var(--sub);padding:26px 0;font-size:14px;}
+  .hint{font-size:12px;color:var(--sub);margin-top:8px;}
+  .nav-links{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .nav-links a{color:var(--primary);font-size:13px;text-decoration:none;}
+  .mg{font-size:13px;color:var(--text);font-weight:600;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:13px;}
+  .chip .del{color:#b91c1c;cursor:pointer;font-weight:700;}
+  .dyn{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .sync-note{background:#e8f5ee;color:#1b7a4b;border-radius:8px;padding:8px 12px;font-size:12px;margin-bottom:12px;}
+  .kpis{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  .kpi{flex:1;min-width:90px;background:#fff;border-radius:10px;padding:10px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+  .kpi .n{font-size:18px;font-weight:700;color:var(--primary);}
+  .kpi .l{font-size:11px;color:var(--sub);}
+  .kpi.g{background:#e8f5ee;color:#1b7a4b;} .kpi.g .n{color:#1b7a4b;}
+  .bar{height:8px;background:#eee;border-radius:4px;overflow:hidden;margin-top:4px;}
+  .bar>i{display:block;height:100%;background:var(--green);}
+  .log-row{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+  .log-row:last-child{border:none;}
+  .log-msg{color:var(--text);}
+  .log-time{color:var(--sub);white-space:nowrap;}
+  .chart-wrap{width:100%;overflow-x:auto;}
+  .chart{display:flex;align-items:flex-end;gap:6px;height:150px;padding:8px 4px 0;min-width:300px;}
+  .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%;justify-content:flex-end;}
+  .col .vbar{width:70%;background:var(--blue);border-radius:3px 3px 0 0;min-height:2px;transition:height .3s;}
+  .col .lab{font-size:10px;color:var(--sub);white-space:nowrap;}
+  .col:nth-child(even) .vbar{background:var(--green);}
+</style>
+</head>
+<body>
+<header>
+  <h1>📊 销售排名</h1>
+  <p>五楼 · GF | 周/月/年/总排名 · 目标达成 · 门店对比 · 云端共享</p>
+  <span id="cloud-status">连接中…</span>
+</header>
+
+<div class="tabs">
+  <button class="active" data-tab="rank">📈 排名</button>
+  <button data-tab="chart">📊 分析</button>
+  <button data-tab="record">✍️ 录入</button>
+  <button data-tab="log">📜 记录</button>
+  <button data-tab="target">🎯 目标</button>
+  <button data-tab="manage">⚙️ 管理</button>
+</div>
+
+<!-- ========== 排名 ========== -->
+<div class="panel active" id="panel-rank">
+  <div class="card">
+    <div class="seg" id="rank-seg">
+      <button data-period="week" class="active">本周</button>
+      <button data-period="month">本月</button>
+      <button data-period="year">今年</button>
+      <button data-period="all">总榜</button>
+    </div>
+    <div class="filter-row">
+      <select id="rank-store"><option value="ALL">全部门店</option></select>
+      <select id="rank-project"><option value="ALL">全项目(总数)</option></select>
+    </div>
+    <div class="nav-links">
+      <span><a href="#" id="rank-prev">← 上一期</a></span>
+      <span id="rank-title" class="mg"></span>
+      <span><a href="#" id="rank-next">下一期 →</a></span>
+    </div>
+  </div>
+  <div class="kpis">
+    <div class="kpi"><div class="n" id="rk-total">0</div><div class="l">总业绩</div></div>
+    <div class="kpi g"><div class="n" id="rk-count">0</div><div class="l">录入条数</div></div>
+    <div class="kpi"><div class="n" id="rk-top">-</div><div class="l">第一名</div></div>
+  </div>
+  <table><thead><tr id="rank-head"></tr></thead><tbody id="rank-body"></tbody></table>
+  <div class="card" style="margin-top:12px;">
+    <button class="btn ghost small" id="btn-copy-rank">📋 复制本期榜单文字</button>
+  </div>
+</div>
+
+<!-- ========== 分析 ========== -->
+<div class="panel" id="panel-chart">
+  <div class="card">
+    <h3>🏬 门店对比（本月）</h3>
+    <div class="kpis">
+      <div class="kpi"><div class="n" id="cmp-a"></div><div class="l" id="cmp-a-name">门店A</div></div>
+      <div class="kpi g"><div class="n" id="cmp-b"></div><div class="l" id="cmp-b-name">门店B</div></div>
+    </div>
+    <div class="hint" id="cmp-info"></div>
+  </div>
+  <div class="card">
+    <h3>📈 近8期业绩趋势 <span class="sub" id="chart-label">按周</span></h3>
+    <div class="seg" id="trend-seg" style="margin-bottom:4px;">
+      <button data-tr="week" class="active">按周</button>
+      <button data-tr="month">按月</button>
+    </div>
+    <div class="chart-wrap"><div class="chart" id="trend-chart"></div></div>
+    <div class="hint">顶部为各店总业绩柱状图，可切换按周/按月。</div>
+  </div>
+</div>
+
+<!-- ========== 录入 ========== -->
+<div class="panel" id="panel-record">
+  <div class="sync-note" id="rec-notice">🔄 正在连接云端…</div>
+  <div class="card">
+    <h3>添加销售记录 <span class="sub">一人一店一条</span></h3>
+    <div class="field" style="margin-bottom:10px;"><label>日期</label><input type="date" id="rec-date"></div>
+    <div class="row">
+      <div class="field"><label>门店</label><select id="rec-store"></select></div>
+      <div class="field"><label>销售员</label><select id="rec-person"></select></div>
+    </div>
+    <div class="field" style="margin-bottom:4px;"><label>销售项目数量</label></div>
+    <div class="dyn" id="rec-dyn"></div>
+    <div style="margin-top:14px;text-align:center;"><button class="btn green" id="rec-add">➕ 添加记录</button></div>
+    <div class="hint" id="rec-msg"></div>
+  </div>
+</div>
+
+<!-- ========== 记录 ========== -->
+<div class="panel" id="panel-log">
+  <div class="card">
+    <h3>📜 录入历史 / 操作记录</h3>
+    <select id="hist-filter" style="margin-bottom:10px;"><option value="ALL">全部</option><option value="WEEK">本周</option><option value="MONTH">本月</option></select>
+    <table><thead><tr><th>日期</th><th>门店</th><th>姓名</th><th>项目</th><th>操作时间</th><th></th></tr></thead><tbody id="hist-body"></tbody></table>
+    <div class="empty" id="hist-empty">还没有记录</div>
+  </div>
+</div>
+
+<!-- ========== 目标 ========== -->
+<div class="panel" id="panel-target">
+  <div class="card">
+    <h3>🎯 目标设置 <span class="sub">(此设备设置，云端同步)</span></h3>
+    <div class="hint" style="margin-bottom:10px;">为每位销售员设置目标，用于计算达成率和占比。留空表示不设目标。</div>
+    <div id="target-list"></div>
+    <div style="text-align:center;margin-top:10px;"><button class="btn" id="save-target">💾 保存目标</button></div>
+    <div class="hint" id="target-msg"></div>
+  </div>
+</div>
+
+<!-- ========== 管理 ========== -->
+<div class="panel" id="panel-manage">
+  <div class="card">
+    <h3>👤 销售员</h3>
+    <div class="row"><input class="input" id="new-person" placeholder="输入销售员名字"><button class="btn" id="add-person">添加</button></div>
+    <div class="chips" id="person-chips"></div>
+  </div>
+  <div class="card">
+    <h3>🏬 门店</h3>
+    <div class="row"><input class="input" id="new-store" placeholder="输入门店名称"><button class="btn" id="add-store">添加</button></div>
+    <div class="chips" id="store-chips"></div>
+  </div>
+  <div class="card">
+    <h3>🛒 销售项目 <span class="sub">可随时新增</span></h3>
+    <div class="row"><input class="input" id="new-proj-name" placeholder="项目名称"><input class="input" id="new-proj-unit" placeholder="单位" style="max-width:100px;"><button class="btn" id="add-proj">新增</button></div>
+    <div class="chips" id="proj-chips"></div>
+  </div>
+  <div class="card">
+    <h3>🔒 访问密码 <span class="sub">可选</span></h3>
+    <div class="row"><input class="input" id="set-pass" type="password" placeholder="设置访问密码(留空关闭)"><button class="btn" id="save-pass">保存密码</button></div>
+    <div class="hint" id="pass-msg">开启后打开网页需输入密码。默认关闭。</div>
+  </div>
+  <div class="card">
+    <h3>⚙️ 数据</h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn ghost small" id="btn-refresh">↻ 刷新</button>
+      <button class="btn ghost small" id="btn-export">导出备份</button>
+      <button class="btn ghost small" id="btn-import">导入</button>
+      <button class="btn ghost small" id="btn-clear" style="color:#b91c1c;">清空全部</button>
+    </div>
+    <input type="file" id="import-file" accept="application/json" style="display:none;">
+    <div class="hint">数据已同步到云端 Supabase，13 人共享。可导出 JSON 备份。</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var SUPA_URL = 'https://belsoyxffwcrgsbhfcef.supabase.co';
+  var SUPA_KEY = 'sb_pub…drXN';
+  var LOCAL_KEY = 'sales_…a_v1';
+
+  var stores = ['五楼','GF'];
+  var projects = [{id:'sr', name:'SR个数', unit:'个'},{id:'cup', name:'臻选饮品', unit:'杯'}];
+  var people = [];
+  var records = []; // {id, date, store, person, v, created_at}
+  var targets = {};  // person -> {value:Number}  周目标? 采用总目标(周期内)
+  var passcode = '';
+  var weekCursor = new Date(); var monthCursor = new Date(); var yearCursor = new Date();
+  var curPeriod = 'week';
+  var trendIdx = 'week';
+  var cloudOK = false;
+  var passOK = false;
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function setStatus(t,ok){ var el=$('cloud-status'); if(el){el.textContent=t; el.style.background=ok?'#2a9d8f':'#e63946';} }
+  function setRecNotice(t){ var n=$('rec-notice'); if(n){ if(t.indexOf('✅')>-1||t.indexOf('连接成功')>-1){n.textContent=t;n.style.background='#e8f5ee';n.style.color='#1b7a4b';} else if(t.indexOf('⚠')>-1){n.textContent=t;n.style.background='#fdf0ee';n.style.color='#b91c1c';} else {n.textContent=t;n.style.background='#eef2f7';n.style.color='#374151';} } }
+
+  /* ===== Supabase REST ===== */
+  function supa(path,opts){ var h=Object.assign({'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'},(opts&&opts.headers)||{}); return fetch(SUPA_URL+path,Object.assign({},opts,{headers:h})).then(function(r){return r.json();}); }
+  function loadMeta(){ return supa('/rest/v1/meta?select=*&id=eq.1').then(function(rows){ if(rows&&rows[0]){ if(rows[0].people)people=rows[0].people; if(rows[0].stores&&rows[0].stores.length)stores=rows[0].stores; if(rows[0].projects&&rows[0].projects.length)projects=rows[0].projects; if(rows[0].targets)targets=rows[0].targets; if(rows[0].passcode)passcode=rows[0].passcode; } }); }
+  function upsertMeta(){ var payload={id:1,people:people,stores:stores,projects:projects,targets:targets,passcode:passcode}; return supa('/rest/v1/meta?on_conflict=id',{method:'POST',body:JSON.stringify(payload),headers:{'Prefer':'resolution=merge-duplicates,return=minimal'}}); }
+  function loadRecords(){ return supa('/rest/v1/sales?select=*&order=date.asc,id.asc').then(function(rows){ records=(rows||[]).map(function(r){return {id:r.id,date:r.date,store:r.store,person:r.person,v:(r.items||{}),created_at:r.created_at};}); }); }
+  function addRecToCloud(rec){ return supa('/rest/v1/sales',{method:'POST',body:JSON.stringify({date:rec.date,store:rec.store,person:rec.person,items:rec.v}),headers:{'Prefer':'return=representation'}}).then(function(rows){ return rows&&rows[0]?{id:rows[0].id,created_at:rows[0].created_at}:{id:null,created_at:null}; }); }
+  function delRecFromCloud(id){ return supa('/rest/v1/sales?id=eq.'+id,{method:'DELETE',headers:{'Prefer':'return=minimal'}}); }
+  function clearCloud(){ return supa('/rest/v1/sales',{method:'DELETE',headers:{'Prefer':'return=minimal'}}).then(function(){return supa('/rest/v1/meta?id=eq.1',{method:'DELETE',headers:{'Prefer':'return=minimal'}});}); }
+  function saveLocal(){ try{localStorage.setItem(LOCAL_KEY,JSON.stringify({people:people,records:records,stores:stores,projects:projects,targets:targets,passcode:passcode}));}catch(e){} }
+
+  function init(){
+    var n=0;
+    loadMeta().then(function(){n++;done();}).catch(function(){n++;done();});
+    loadRecords().then(function(){n++;done();}).catch(function(){n++;done();});
+    function done(){ if(n>=2){ cloudOK=true; setStatus('已连接',true); setRecNotice('✅ 已连接云端 · 数据多端同步'); saveLocal(); afterLoad(); } }
+    setTimeout(function(){ if(!cloudOK){ setStatus('离线(缓存)',false); setRecNotice('⚠️ 云端连接失败，显示本机缓存'); afterLoad(); } },9000);
+  }
+  function afterLoad(){ renderAll(); checkPass(); }
+
+  /* ===== 密码 ===== */
+  function checkPass(){
+    if(passOK) return;
+    if(passcode && passcode.length>0){
+      var p=prompt('🔒 请输入访问密码：');
+      if(p===passcode){ passOK=true; } else { alert('密码错误'); }
+    } else { passOK=true; }
+  }
+
+  /* ===== 工具函数 ===== */
+  function fmt(n){return n<10?'0'+n:''+n;}
+  function ymd(d){return d.getFullYear()+'-'+fmt(d.getMonth()+1)+'-'+fmt(d.getDate());}
+  function parse(s){var p=s.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+  function startOfWeek(d){var x=new Date(d),day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);x.setHours(0,0,0,0);return x;}
+  function addDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x;}
+  function inRange(ds,start,end){var t=parse(ds).getTime();return t>=start.getTime()&&t<=end.getTime();}
+  function filtered(store){if(!store||store==='ALL')return records;return records.filter(function(r){return r.store===store;});}
+
+  // 汇总：按人，可选按项目维度的总数
+  function summarize(list, projId){
+    var map={};
+    list.forEach(function(r){
+      if(!map[r.person]){var v={};projects.forEach(function(p){v[p.id]=0;});map[r.person]={person:r.person,v:v};}
+      var row=map[r.person];
+      projects.forEach(function(p){ row.v[p.id] += +(r.v[p.id])||0; });
+    });
+    var arr=Object.keys(map).map(function(k){return map[k];});
+    arr.forEach(function(x){
+      if(projId && projId!=='ALL'){ x.total = x.v[projId]||0; }
+      else { x.total=0; projects.forEach(function(p){x.total+=x.v[p.id];}); }
+      var t=targets[x.person]?+(targets[x.person].value||0):0;
+      x.target=t; x.rate = t>0 ? Math.round(x.total/t*100) : null;
+    });
+    arr.sort(function(a,b){return b.total-a.total;});
+    return arr;
+  }
+  function rankBadge(i){if(i===0)return'<span class="badge gold">1</span>';if(i===1)return'<span class="badge silver">2</span>';if(i===2)return'<span class="badge bronze">3</span>';return'<span class="badge plain">'+(i+1)+'</span>';}
+  function rowClass(i){return i===0?'top1':(i===1?'top2':(i===2?'top3':''));}
+
+  /* ===== 排名 ===== */
+  var periodRange = { week:null, month:null, year:null, all:null };
+  var periodCursors = { week:new Date(), month:new Date(), year:new Date() };
+  function currentRange(p){
+    if(p==='all') return null;
+    if(p==='week'){ var s=startOfWeek(periodCursors.week); return {start:s,end:addDays(s,6),label:'第'+weekNumber(s)+'周 '+(s.getMonth()+1)+'月'+s.getDate()+'日-'+addDays(s,6).getDate()+'日'}; }
+    if(p==='month'){ var m=periodCursors.month; return {start:new Date(m.getFullYear(),m.getMonth(),1),end:new Date(m.getFullYear(),m.getMonth()+1,0),label:(m.getFullYear())+'年'+(m.getMonth()+1)+'月'}; }
+    if(p==='year'){ var y=periodCursors.year; return {start:new Date(y.getFullYear(),0,1),end:new Date(y.getFullYear(),11,31),label:(y.getFullYear())+'年'}; }
+    return null;
+  }
+  function weekNumber(d){var t=new Date(d),st=new Date(t.getFullYear(),0,1);return Math.ceil((((t-st)/86400000)+st.getDay()+1)/7);}
+
+  function renderRank(){
+    var store=$('rank-store').value||'ALL';
+    var proj=$('rank-project').value||'ALL';
+    var rng=currentRange(curPeriod);
+    var list=filtered(store);
+    if(rng) list=list.filter(function(r){return inRange(r.date,rng.start,rng.end);});
+    var title = rng?rng.label:(curPeriod==='all'?'总榜(全部)':'');
+    $('rank-title').textContent=title;
+    // 表头
+    var heads='<th>排名</th><th>姓名</th>'+projects.map(function(p){return'<th>'+esc(p.name)+'</th>';}).join('')+'<th>'+(proj!=='ALL'?'该项':'总数')+'</th>';
+    $('rank-head').innerHTML=heads;
+    var sum=summarize(list, proj);
+    var tb=$('rank-body'); tb.innerHTML='';
+    var totalAll=0;
+    sum.forEach(function(x,i){
+      totalAll+=x.total;
+      var rateCell = x.rate!==null ? '<td><span style="color:'+(x.rate>=100?'#2a9d8f':'#e63946')+'">'+x.rate+'%</span>'+(x.rate>=100?'✓':'')+'</td>' : '';
+      var tr=document.createElement('tr'); tr.className=rowClass(i);
+      tr.innerHTML='<td>'+rankBadge(i)+'</td><td><b>'+esc(x.person)+'</b></td>'+projects.map(function(p){return'<td>'+x.v[p.id]+'</td>';}).join('')+'<td class="total">'+x.total+'</td>'+ (x.rate!==null?rateCell:'');
+      tb.appendChild(tr);
+    });
+    $('rk-total').textContent=fmtNum(totalAll);
+    $('rk-count').textContent=list.length;
+    $('rk-top').textContent=sum.length?sum[0].person:'-';
+  }
+  function fmtNum(n){ return (n||0).toLocaleString(); }
+
+  /* ===== 分析：门店对比 + 趋势 ===== */
+  function renderChart(){
+    // 本月门店对比
+    var m=new Date(); var start=new Date(m.getFullYear(),m.getMonth(),1), end=new Date(m.getFullYear(),m.getMonth()+1,0);
+    var mlist=records.filter(function(r){return inRange(r.date,start,end);});
+    if(stores.length>=2){
+      var ta=0,tb=0;
+      var a=stores[0], b=stores[1];
+      mlist.forEach(function(r){ if(r.store===a){projects.forEach(function(p){ta+=(+r.v[p.id])||0;});} if(r.store===b){projects.forEach(function(p){tb+=(+r.v[p.id])||0;});} });
+      $('cmp-a-name').textContent=a; $('cmp-b-name').textContent=b;
+      $('cmp-a').textContent=fmtNum(ta); $('cmp-b').textContent=fmtNum(tb);
+      var diff = (ta+tb)>0 ? Math.round(Math.max(ta,tb)/(ta+tb)*100) : 0;
+      $('cmp-info').textContent='本月合计：'+fmtNum(ta+tb)+'，领先店占比 '+diff+'%';
+    } else {
+      $('cmp-info').textContent='暂少于两家门店，请到「管理」添加。';
+    }
+    // 趋势图
+    renderTrend();
+  }
+  function renderTrend(){
+    var arr=[];
+    if(trendIdx==='week'){ var base2=startOfWeek(new Date()); for(var k2=7;k2>=0;k2--){ arr.push(totalInRange(addDays(base2,-k2*7),addDays(addDays(base2,-k2*7),6))); } }
+    else { var mm=new Date(); for(var k3=7;k3>=0;k3--){ var mm2=new Date(mm.getFullYear(),mm.getMonth()-k3,1); var mm3=new Date(mm2.getFullYear(),mm2.getMonth()+1,0); arr.push(totalInRange(mm2,mm3)); } }
+    var max=Math.max.apply(null,arr.concat([1]));
+    var c=$('trend-chart'); c.innerHTML='';
+    var labs = trendIdx==='week' ? ['8周前','7','6','5','4','3','2','本周'] : (function(){var r=[];for(var i=7;i>=0;i--){var x=new Date();x.setMonth(x.getMonth()-i);r.push(x.getMonth()+1+'月');}return r;})();
+    for(var i=0;i<arr.length;i++){
+      var col=document.createElement('div'); col.className='col';
+      var h=Math.round(arr[i]/max*100); if(h<2)h=2;
+      col.innerHTML='<div class="lab">'+fmtNum(arr[i])+'</div><div class="vbar" style="height:'+h+'%"></div><div class="lab">'+labs[i]+'</div>';
+      c.appendChild(col);
+    }
+  }
+  function totalInRange(s,e){ var c=0; records.forEach(function(r){ if(inRange(r.date,s,e)){projects.forEach(function(p){c+=(+r.v[p.id])||0;});} }); return c; }
+
+  /* ===== 录入 ===== */
+  function renderRecDyn(){ var b=$('rec-dyn'); b.innerHTML=''; projects.forEach(function(p){ var d=document.createElement('div'); d.innerHTML='<div class="field"><label>'+esc(p.name)+' ('+esc(p.unit)+')</label><input type="number" class="dyn-in" data-id="'+p.id+'" min="0" step="1" placeholder="0"></div>'; b.appendChild(d); }); }
+  function fillSelect(sel,arr,def){ sel.innerHTML=''; arr.forEach(function(s){var o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);}); if(def)sel.value=def; }
+  function refreshSelects(){
+    fillSelect($('rec-store'),stores,'五楼'); fillSelect($('rec-person'),people);
+    var old=$('rank-store').value||'ALL', sel=$('rank-store'); sel.innerHTML='<option value="ALL">全部门店</option>'; stores.forEach(function(s){var o=document.createElement('option');o.value=s;o.textContent=s;sel.appendChild(o);}); sel.value=old;
+    // 项目筛选
+    var op=$('rank-project'); var cur2=op.value||'ALL'; op.innerHTML='<option value="ALL">全项目(总数)</option>'; projects.forEach(function(p){var o=document.createElement('option');o.value=p.id;o.textContent=p.name;op.appendChild(o);}); op.value=cur2;
+  }
+  function addRecord(){
+    if(!passOK){ alert('请先输入访问密码'); return; }
+    var date=$('rec-date').value, store=$('rec-store').value, person=$('rec-person').value;
+    if(!date){$('rec-msg').textContent='请选择日期';return;}
+    if(!person){$('rec-msg').textContent='请先添加并选择销售员';return;}
+    var v={}; projects.forEach(function(p){var inp=document.querySelector('.dyn-in[data-id="'+p.id+'"]'); v[p.id]=inp?(parseInt(inp.value)||0):0;});
+    var rec={date:date,store:store,person:person,v:v};
+    $('rec-msg').textContent='⏳ 保存中…'; $('rec-add').disabled=true;
+    addRecToCloud(rec).then(function(res){
+      rec.id=res.id; rec.created_at=res.created_at; records.push(rec); saveLocal();
+      if(cloudOK) upsertMeta().catch(function(){});
+      $('rec-msg').textContent='✅ 已保存 '+person+'（'+store+'）';
+      document.querySelectorAll('.dyn-in').forEach(function(i){i.value='';});
+      renderRecDyn(); renderAll();
+    }).catch(function(){ $('rec-msg').textContent='❌ 保存失败，请检查网络'; }).finally(function(){ $('rec-add').disabled=false; });
+  }
+
+  /* ===== 历史/操作记录 ===== */
+  function renderHist(){
+    var f=$('hist-filter').value, now=new Date();
+    var list=records.slice().reverse();
+    if(f==='WEEK'){var s=startOfWeek(now); list=list.filter(function(r){return inRange(r.date,s,addDays(s,6));});}
+    if(f==='MONTH'){var ms=new Date(now.getFullYear(),now.getMonth(),1),me=new Date(now.getFullYear(),now.getMonth()+1,0); list=list.filter(function(r){return inRange(r.date,ms,me);});}
+    var tb=$('hist-body'); tb.innerHTML=''; $('hist-empty').style.display=list.length?'none':'block';
+    list.forEach(function(r){
+      var items=projects.map(function(p){return r.v[p.id]>0?esc(p.name)+':'+r.v[p.id]:null;}).filter(Boolean);
+      var timeStr = r.created_at ? fmtTime(new Date(r.created_at)) : '-';
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td>'+esc(r.date)+'</td><td>'+esc(r.store)+'</td><td><b>'+esc(r.person)+'</b></td><td>'+(items.join(' '))+'</td><td style="font-size:11px;color:var(--sub);">'+timeStr+'</td><td><button class="delete" data-id="'+(r.id||'')+'">删</button></td>';
+      tb.appendChild(tr);
+    });
+    document.querySelectorAll('#hist-body .delete').forEach(function(btn){ btn.addEventListener('click',function(){ var id=btn.getAttribute('data-id'); if(!confirm('删除这条记录？'))return; if(id){ delRecFromCloud(id).then(function(){ records=records.filter(function(r){return String(r.id)!==String(id);}); saveLocal(); renderAll(); }).catch(function(){ alert('删除失败'); }); } }); });
+  }
+  function fmtTime(d){ if(isNaN(d.getTime()))return'-'; return (d.getMonth()+1)+'-'+d.getDate()+' '+fmt(d.getHours())+':'+fmt(d.getMinutes()); }
+
+  /* ===== 目标 ===== */
+  function renderTargets(){
+    var tb=$('target-list'); tb.innerHTML='';
+    people.forEach(function(p){
+      var d=document.createElement('div'); d.className='field'; d.style.marginBottom='10px';
+      var val = targets[p]? +(targets[p].value||0):'';
+      d.innerHTML='<label>'+esc(p)+' — 目标业绩</label><input type="number" class="target-in" data-p="'+esc(p)+'" min="0" placeholder="目标(0=不设)" value="'+val+'">';
+      tb.appendChild(d);
+    });
+  }
+  $('save-target').addEventListener('click',function(){
+    targets={};
+    document.querySelectorAll('.target-in').forEach(function(inp){
+      var p=inp.getAttribute('data-p'); var val=parseInt(inp.value)||0;
+      if(val>0) targets[p]={value:val};
+    });
+    saveLocal(); if(cloudOK) upsertMeta().catch(function(){}); renderAll();
+    $('target-msg').textContent='✅ 目标已保存并同步';
+    setTimeout(function(){$('target-msg').textContent='';},2000);
+  });
+
+  /* ===== 管理 ===== */
+  function renderPersonChips(){ var b=$('person-chips'); b.innerHTML=''; people.forEach(function(p,i){ var c=document.createElement('span'); c.className='chip'; c.innerHTML=esc(p)+' <span class="del" data-i="'+i+'">×</span>'; c.querySelector('.del').addEventListener('click',function(){ people.splice(i,1); syncAll(); }); b.appendChild(c); }); }
+  function renderStoreChips(){ var b=$('store-chips'); b.innerHTML=''; stores.forEach(function(s,i){ var c=document.createElement('span'); c.className='chip'; c.innerHTML=esc(s)+' <span class="del" data-i="'+i+'">×</span>'; c.querySelector('.del').addEventListener('click',function(){ if(stores.length<=1)return; stores.splice(i,1); syncAll(); }); b.appendChild(c); }); }
+  function renderProjChips(){ var b=$('proj-chips'); b.innerHTML=''; projects.forEach(function(p,i){ var c=document.createElement('span'); c.className='chip'; c.innerHTML=esc(p.name)+'('+esc(p.unit)+') <span class="del" data-i="'+i+'">×</span>'; c.querySelector('.del').addEventListener('click',function(){ if(projects.length<=1)return; projects.splice(i,1); syncAll(); }); b.appendChild(c); }); }
+  function syncAll(){ saveLocal(); if(cloudOK) upsertMeta().catch(function(){}); renderAll(); }
+  function renderAll(){
+    refreshSelects(); renderRecDyn(); renderPersonChips(); renderStoreChips(); renderProjChips(); renderHist(); renderRank(); renderChart(); renderTargets();
+  }
+
+  /* ===== Tabs & 事件 ===== */
+  document.querySelectorAll('.tabs button').forEach(function(btn){ btn.addEventListener('click',function(){ document.querySelectorAll('.tabs button').forEach(function(b){b.classList.remove('active');}); document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');}); btn.classList.add('active'); $('panel-'+btn.getAttribute('data-tab')).classList.add('active'); }); });
+  document.querySelectorAll('#rank-seg button').forEach(function(b){ b.addEventListener('click',function(){ curPeriod=b.getAttribute('data-period'); document.querySelectorAll('#rank-seg button').forEach(function(x){x.classList.remove('active');}); b.classList.add('active'); renderRank(); }); });
+  document.querySelectorAll('#trend-seg button').forEach(function(b){ b.addEventListener('click',function(){ trendIdx=b.getAttribute('data-tr'); document.querySelectorAll('#trend-seg button').forEach(function(x){x.classList.remove('active');}); b.classList.add('active'); renderTrend(); }); });
+  $('rank-store').addEventListener('change',renderRank);
+  $('rank-project').addEventListener('change',renderRank);
+  $('hist-filter').addEventListener('change',renderHist);
+  $('rank-prev').addEventListener('click',function(e){e.preventDefault(); shiftCursor(-1); renderRank();});
+  $('rank-next').addEventListener('click',function(e){e.preventDefault(); shiftCursor(1); renderRank();});
+  function shiftCursor(d){
+    if(curPeriod==='week') periodCursors.week=addDays(periodCursors.week,d*7);
+    else if(curPeriod==='month') periodCursors.month=new Date(periodCursors.month.getFullYear(),periodCursors.month.getMonth()+d,1);
+    else if(curPeriod==='year') periodCursors.year=new Date(periodCursors.year.getFullYear()+d,0,1);
+  }
+  $('rec-add').addEventListener('click',addRecord);
+  $('add-person').addEventListener('click',function(){var v=$('new-person').value.trim();if(!v)return;if(people.indexOf(v)>-1)return;people.push(v);$('new-person').value='';syncAll();});
+  $('add-store').addEventListener('click',function(){var v=$('new-store').value.trim();if(!v)return;if(stores.indexOf(v)>-1)return;stores.push(v);$('new-store').value='';syncAll();});
+  $('add-proj').addEventListener('click',function(){var n=$('new-proj-name').value.trim();if(!n)return;var u=$('new-proj-unit').value.trim()||'个';projects.push({id:'p'+Date.now(),name:n,unit:u});$('new-proj-name').value='';$('new-proj-unit').value='';syncAll();});
+  $('save-pass').addEventListener('click',function(){ var p=$('set-pass').value.trim(); passcode=p; saveLocal(); if(cloudOK) upsertMeta().catch(function(){}); if(p){$('pass-msg').textContent='✅ 访问密码已设置并同步';}else{$('pass-msg').textContent='✅ 访问密码已关闭';} $('set-pass').value=''; setTimeout(function(){ $('pass-msg').textContent='开启后打开网页需输入密码。默认关闭。'; },2500);});
+  $('btn-refresh').addEventListener('click',function(){ setRecNotice('🔄 同步中…'); Promise.all([loadMeta(),loadRecords()]).then(function(){ setRecNotice('✅ 已同步最新数据'); saveLocal(); renderAll(); }).catch(function(){ setRecNotice('❌ 同步失败'); }); });
+  $('btn-copy-rank').addEventListener('click',function(){ copyRank(); });
+  function copyRank(){
+    var store=$('rank-store').value, proj=$('rank-project').value;
+    var rng=currentRange(curPeriod);
+    var list=filtered(store); if(rng)list=list.filter(function(r){return inRange(r.date,rng.start,rng.end);});
+    var sum=summarize(list,proj);
+    var txt='🏆 销售排名 · '+(rng?rng.label:'总榜')+'\n';
+    sum.forEach(function(x,i){ txt+=(i+1)+'. '+x.person+'：'+x.total+(x.rate!==null?'（达成'+x.rate+'%）':'')+'\n'; });
+    if(!sum.length) txt+='（暂无数据）';
+    // 复制
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(function(){ alert('✅ 榜单已复制，可直接粘贴到微信/群'); }).catch(function(){ fallbackCopy(txt); }); }
+    else fallbackCopy(txt);
+  }
+  function fallbackCopy(txt){ var ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); try{document.execCommand('copy'); alert('✅ 榜单已复制');}catch(e){ alert('复制失败，请手动复制\n\n'+txt); } document.body.removeChild(ta); }
+
+  $('btn-export').addEventListener('click',function(){ var b=new Blob([JSON.stringify({people:people,records:records,stores:stores,projects:projects,targets:targets,passcode:passcode},null,2)],{type:'application/json'}); var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='销售排名备份.json'; a.click(); });
+  $('btn-import').addEventListener('click',function(){$('import-file').click();});
+  $('import-file').addEventListener('change',function(){ if(!this.files[0])return; var fr=new FileReader(); fr.onload=function(){ try{ var d=JSON.parse(fr.result); if(d.people)people=d.people; if(d.records)records=d.records; if(d.stores&&d.stores.length)stores=d.stores; if(d.projects&&d.projects.length)projects=d.projects; if(d.targets)targets=d.targets; if(d.passcode!==undefined)passcode=d.passcode; syncAll(); }catch(e){ alert('导入失败'); } }; fr.readAsText(this.files[0]); });
+  $('btn-clear').addEventListener('click',function(){ if(!confirm('确定清空全部数据？云端与本机都会清空，不可恢复。'))return; clearCloud().then(function(){ records=[]; people=[]; syncAll(); }).catch(function(){ records=[]; people=[]; syncAll(); }); });
+
+  /* ===== 初始化 ===== */
+  $('rec-date').value=new Date().getFullYear()+'-'+fmt(new Date().getMonth()+1)+'-'+fmt(new Date().getDate());
+  renderAll();
+  init();
+})();
+</script>
+</body>
+</html>
